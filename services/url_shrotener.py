@@ -25,9 +25,13 @@ async def url_activation(url: str, activate: bool=True):
         await session.execute(query, {"url": url, "activation": activate})
         await session.commit()
 
-async def find_url(code: str):
+async def find_url(code: str) -> tuple[str, bool]:
     sql = text(f"SELECT url, code, active FROM urls WHERE code = :code")
 
     async with get_session() as session:
         data: CursorResult = await session.execute(sql, {"code": code})
-    return data.fetchone()[0]
+    record = data.fetchone()
+    return (
+        record[0],
+        bool(record[-1])
+    )
